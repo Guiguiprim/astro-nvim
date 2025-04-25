@@ -1,9 +1,33 @@
-if true then return {} end -- WARN: REMOVE THIS LINE TO ACTIVATE THIS FILE
-
 -- AstroLSP allows you to customize the features in AstroNvim's LSP configuration engine
 -- Configuration documentation can be found with `:h astrolsp`
 -- NOTE: We highly recommend setting up the Lua Language Server (`:LspInstall lua_ls`)
 --       as this provides autocomplete and documentation while editing
+
+local rust_analyzer_options = {
+    checkOnSave = true,
+    cargo = {
+        extraArgs = { "--target-dir", "target/rust-analyzer" },
+    },
+    check = {
+        command = "clippy",
+    }
+
+}
+
+if vim.env.IN_NIX_SHELL then
+    rust_analyzer_options = {
+        checkOnSave = true,
+        cargo = {
+            -- target = "x86_64-unknown-linux-musl",
+            target = "x86_64-win7-windows-msvc",
+            -- target = "x86_64-apple-darwin",
+            extraArgs = { "--target-dir", "target/rust-analyzer" },
+        },
+        check = {
+            command = "clippy",
+        }
+    }
+end
 
 ---@type LazySpec
 return {
@@ -20,12 +44,9 @@ return {
     formatting = {
       -- control auto formatting on save
       format_on_save = {
-        enabled = true, -- enable or disable format on save globally
-        allow_filetypes = { -- enable format on save for specified filetypes only
-          -- "go",
-        },
-        ignore_filetypes = { -- disable format on save for specified filetypes
-          -- "python",
+        enabled = true, -- enable or disable
+        ignore_filetypes = {
+          -- disable format on save for specified filetypes
         },
       },
       disabled = { -- disable formatting capabilities for the listed language servers
@@ -44,7 +65,11 @@ return {
     -- customize language server configuration options passed to `lspconfig`
     ---@diagnostic disable: missing-fields
     config = {
-      -- clangd = { capabilities = { offsetEncoding = "utf-8" } },
+      rust_analyzer = {
+          settings = {
+              ['rust-analyzer'] = rust_analyzer_options,
+          },
+      },
     },
     -- customize how language servers are attached
     handlers = {
